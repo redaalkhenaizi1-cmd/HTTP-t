@@ -68,4 +68,4 @@ def rgb2_talk():
         code = "1" + code[1:]
 
     index = (index + 1) % len(MESSAGE)
-    return code
+    return code[::-1]
