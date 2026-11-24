@@ -6,7 +6,7 @@ app = Flask(__name__)
 MESSAGE = "HELLO FROM RENDER! "
 index = 0
 
-# Standard 6-bit binary values for Build Logic characters (1=a .. 26=z)
+# Build Logic 6-bit character indices (0=space, 1=a .. 26=z)
 CHAR_NUM = {
     " ": 0,
     "a": 1,
@@ -62,14 +62,15 @@ def rgb2_talk():
     ch = MESSAGE[index]
     num = CHAR_NUM.get(ch.lower(), 0)
 
-    # Convert number to 6 bits (b5 b4 b3 b2 b1 b0)
+    # 6-bit binary string: b[0] is MSB (32), b[5] is LSB (1)
     b = format(num, "06b")
 
-    # Map the 2x3 grid in column-major order (Left column top-to-bottom, Right column top-to-bottom)
-    grid_bits = b[0] + b[2] + b[4] + b[1] + b[3] + b[5]
+    # Exact 2x3 grid pin order on the 16x16 RGB2 Panel
+    grid_bits = b[2] + b[1] + b[0] + b[5] + b[4] + b[3]
 
     is_shifted = (ch.isalpha() and ch.isupper()) or ch in ["!", "?"]
     shift_bit = "1" if is_shifted else "0"
 
     index = (index + 1) % len(MESSAGE)
     return shift_bit + grid_bits
+    
