@@ -6,48 +6,48 @@ app = Flask(__name__)
 MESSAGE = "HELLO FROM RENDER! "
 index = 0
 
-# 7-bit codes for the RGB2 Panel's "Characters" pins (SHIFT + 6 bits)
+# Exact 6-bit character codes for Build Logic's RGB2 Panel
 CHAR_MAP = {
-    " ": "0000000",
-    "a": "0000001",
-    "b": "0000010",
-    "c": "0000011",
-    "d": "0000100",
-    "e": "0000101",
-    "f": "0000110",
-    "g": "0000111",
-    "h": "0001000",
-    "i": "0001001",
-    "j": "0001010",
-    "k": "0001011",
-    "l": "0001100",
-    "m": "0001101",
-    "n": "0001110",
-    "o": "0001111",
-    "p": "0010000",
-    "q": "0010001",
-    "r": "0010010",
-    "s": "0010011",
-    "t": "0010100",
-    "u": "0010101",
-    "v": "0010110",
-    "w": "0010111",
-    "x": "0011000",
-    "y": "0011001",
-    "z": "0011010",
-    "1": "0011011",
-    "2": "0011100",
-    "3": "0011101",
-    "4": "0011110",
-    "5": "0011111",
-    "6": "0100000",
-    "7": "0100001",
-    "8": "0100010",
-    "9": "0100011",
-    "0": "0100100",
-    "!": "1011011",
-    "?": "1100000",
-    ".": "0100111",
+    " ": "000000",
+    "a": "000001",
+    "b": "000010",
+    "c": "000011",
+    "d": "000100",
+    "e": "000101",
+    "f": "000110",
+    "g": "000111",
+    "h": "001000",
+    "i": "001001",
+    "j": "001010",
+    "k": "001011",
+    "l": "001100",
+    "m": "001101",
+    "n": "001110",
+    "o": "001111",
+    "p": "010000",
+    "q": "010001",
+    "r": "010010",
+    "s": "010011",
+    "t": "010100",
+    "u": "010101",
+    "v": "010110",
+    "w": "010111",
+    "x": "011000",
+    "y": "011001",
+    "z": "011010",
+    "1": "011011",
+    "2": "011100",
+    "3": "011101",
+    "4": "011110",
+    "5": "011111",
+    "6": "100000",
+    "7": "100001",
+    "8": "100010",
+    "9": "100011",
+    "0": "100100",
+    "!": "011011",
+    "?": "100000",
+    ".": "100111",
 }
 
 
@@ -56,16 +56,17 @@ def rgb2_talk():
     global index
     data = request.get_json(silent=True) or {}
 
-    # Flip your input switch ON ("1") and trigger POST to restart from the beginning
     if str(data.get("value")) == "1":
         index = 0
 
     ch = MESSAGE[index]
-    code = CHAR_MAP.get(ch.lower(), "0000000")
+    bits = CHAR_MAP.get(ch.lower(), "000000")
 
-    # If the letter is UPPERCASE, turn the first bit (SHIFT) to "1"
-    if ch.isalpha() and ch.isupper():
-        code = "1" + code[1:]
+    # SHIFT bit goes on Pin 1 ("1" for uppercase or !/?, "0" for lowercase)
+    is_shifted = (ch.isalpha() and ch.isupper()) or ch in ["!", "?"]
+    shift_bit = "1" if is_shifted else "0"
 
     index = (index + 1) % len(MESSAGE)
-    return code[::-1]
+
+    # Keep SHIFT on Pin 1 and reverse the 6 character bits to match your wires
+    return shift_bit + bits[::-1]
